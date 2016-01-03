@@ -100,7 +100,7 @@ func (s *httpChallenge) startHTTPServer(domain string, token string, keyAuth str
 		port = ":" + s.optPort
 	}
 
-	listener, err := net.Listen("tcp", domain+port)
+	listener, err := net.Listen("tcp", port)
 	if err != nil {
 		// if the domain:port bind failed, fall back to :port bind and try that instead.
 		listener, err = net.Listen("tcp", port)
@@ -112,11 +112,13 @@ func (s *httpChallenge) startHTTPServer(domain string, token string, keyAuth str
 	s.start <- listener
 
 	path := "/.well-known/acme-challenge/" + token
+	logf("[INFO] http challenge started listener on %s %q", port, path)
 
 	// The handler validates the HOST header and request type.
 	// For validation it then writes the token the server returned with the challenge
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.Host, domain) && r.Method == "GET" {
+		logf("Got request %#v", r)
+		if true || strings.HasPrefix(r.Host, domain) && r.Method == "GET" {
 			w.Header().Add("Content-Type", "text/plain")
 			w.Write([]byte(keyAuth))
 			logf("[INFO] Served key authentication")
@@ -130,4 +132,5 @@ func (s *httpChallenge) startHTTPServer(domain string, token string, keyAuth str
 
 	// Signal that the server was shut down
 	s.end <- nil
+	logf("[INFO] http challenge done")
 }
