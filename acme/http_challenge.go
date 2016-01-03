@@ -112,12 +112,10 @@ func (s *httpChallenge) startHTTPServer(domain string, token string, keyAuth str
 	s.start <- listener
 
 	path := "/.well-known/acme-challenge/" + token
-	logf("[INFO] http challenge started listener on %s %q", port, path)
 
 	// The handler validates the HOST header and request type.
 	// For validation it then writes the token the server returned with the challenge
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		logf("Got request %#v", r)
 		if true || strings.HasPrefix(r.Host, domain) && r.Method == "GET" {
 			w.Header().Add("Content-Type", "text/plain")
 			w.Write([]byte(keyAuth))
@@ -132,5 +130,4 @@ func (s *httpChallenge) startHTTPServer(domain string, token string, keyAuth str
 
 	// Signal that the server was shut down
 	s.end <- nil
-	logf("[INFO] http challenge done")
 }
